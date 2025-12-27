@@ -50,22 +50,28 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.email = user.email;
-        token.name = user.name;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.email = token.email as string;
-        session.user.name = token.name as string;
-      }
-      return session;
-    },
+  async jwt({ token, user }) {
+    console.log('JWT Callback - user:', user)
+    console.log('JWT Callback - token before:', token)
+    if (user) {
+      token.id = user.id
+      token.email = user.email
+      token.name = user.name
+    }
+    console.log('JWT Callback - token after:', token)
+    return token
   },
+  async session({ session, token }) {
+    console.log('Session Callback - token:', token)
+    console.log('Session Callback - session before:', session)
+    if (session.user) {
+      session.user.id = token.id as string
+      session.user.email = token.email as string
+      session.user.name = token.name as string
+    }
+    console.log('Session Callback - session after:', session)
+    return session
+  },
+},
   secret: process.env.NEXTAUTH_SECRET,
 };
