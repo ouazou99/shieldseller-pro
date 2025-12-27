@@ -4,6 +4,7 @@ import { compare } from 'bcryptjs';
 import { prisma } from './prisma';
 
 export const authOptions: NextAuthOptions = {
+  trustHost: true, // ← ADD THIS LINE - Critical for Vercel!
   session: {
     strategy: 'jwt',
   },
