@@ -1,10 +1,9 @@
-import { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { compare } from 'bcryptjs';
-import { prisma } from './prisma';
+import { NextAuthOptions } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
+import { compare } from 'bcryptjs'
+import { prisma } from './prisma'
 
 export const authOptions: NextAuthOptions = {
-  
   session: {
     strategy: 'jwt',
   },
@@ -22,44 +21,44 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Missing credentials');
+          return null
         }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
-          include: { subscription: true },
-        });
+        })
 
         if (!user || !user.password) {
-          throw new Error('Invalid email or password');
+          return null
         }
 
-        const isPasswordValid = await compare(credentials.password, user.password);
+        const isValid = await compare(credentials.password, user.password)
 
-        if (!isPasswordValid) {
-          throw new Error('Invalid email or password');
+        if (!isValid) {
+          return null
         }
 
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          image: user.image,
-        };
+        }
       },
     }),
   ],
-  // lib/auth.ts - simplified callbacks
-callbacks: {
-  async jwt({ token, user }) {
-    if (user) {
-      token.id = user.id
-    }
-    return token
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string
+      }
+      return session
+    },
   },
-  async session({ session, token }) {
-    return session  // Return without modification for now
-  },
-},
   secret: process.env.NEXTAUTH_SECRET,
-};
+}
