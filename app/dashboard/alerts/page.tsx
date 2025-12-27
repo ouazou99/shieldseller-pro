@@ -60,7 +60,7 @@ export default async function AlertsPage() {
                 No alerts yet
               </h3>
               <p className="mt-2 text-gray-600">
-                You'll receive notifications here when violations are detected
+                you&apos;ll receive notifications here when violations are detected
               </p>
             </div>
           </CardContent>

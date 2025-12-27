@@ -46,7 +46,7 @@ export default function Home() {
           
           <p className="text-xl md:text-2xl text-gray-600 mb-10 leading-relaxed">
             Automatically detect violations, monitor SPS scores, and protect your store 
-            from suspension. <span className="font-semibold text-gray-900">Save your revenue before it's too late.</span>
+            from suspension. <span className="font-semibold text-gray-900">Save your revenue before it&apos;s too late.</span>
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
@@ -145,10 +145,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Your Store's Guardian Angel
+              Your Store&apos;s Guardian Angel
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              ShieldSeller monitors every listing, every metric, and every policy change so you don't have to.
+              ShieldSeller monitors every listing, every metric, and every policy change so you don&apos;t have to.
             </p>
           </div>
           
@@ -261,7 +261,7 @@ export default function Home() {
       <section className="bg-brand-600 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Don't Wait for a Violation
+            Don&apos;t Wait for a Violation
           </h2>
           <p className="text-xl text-brand-100 mb-8 max-w-2xl mx-auto">
             Join hundreds of sellers protecting their TikTok Shop stores with ShieldSeller.

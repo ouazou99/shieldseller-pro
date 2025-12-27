@@ -106,7 +106,7 @@ export default async function UploadPage() {
                 <p>2. Each listing is analyzed for violations</p>
                 <p>3. Risk scores are calculated (0-100)</p>
                 <p>4. Violations are detected and categorized</p>
-                <p>5. You'll see results in the Listings page</p>
+                <p>5. you&apos;ll see results in the Listings page</p>
               </CardContent>
             </Card>
 
