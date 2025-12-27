@@ -5,12 +5,7 @@
       "schedule": "0 9 * * *"
     }
   ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ],
+  
   "headers": [
     {
       "source": "/api/stripe/webhook",
