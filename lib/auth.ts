@@ -49,28 +49,16 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  callbacks: {
+  // lib/auth.ts - simplified callbacks
+callbacks: {
   async jwt({ token, user }) {
-    console.log('JWT Callback - user:', user)
-    console.log('JWT Callback - token before:', token)
     if (user) {
       token.id = user.id
-      token.email = user.email
-      token.name = user.name
     }
-    console.log('JWT Callback - token after:', token)
     return token
   },
   async session({ session, token }) {
-    console.log('Session Callback - token:', token)
-    console.log('Session Callback - session before:', session)
-    if (session.user) {
-      session.user.id = token.id as string
-      session.user.email = token.email as string
-      session.user.name = token.name as string
-    }
-    console.log('Session Callback - session after:', session)
-    return session
+    return session  // Return without modification for now
   },
 },
   secret: process.env.NEXTAUTH_SECRET,
