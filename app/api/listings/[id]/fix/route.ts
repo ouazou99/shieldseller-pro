@@ -93,13 +93,23 @@ export async function POST(
       });
     }
 
-    return NextResponse.json({
-      success: true,
-      ...fixResult,
-      remainingRewrites: fixResult.isSimpleFix 
-        ? subscription.aiRewritesLimit 
-        : subscription.aiRewritesLimit - 1,
-    });
+    if (!fixResult.success) {
+  return NextResponse.json(
+    { error: fixResult.error || 'Failed to generate fix' },
+    { status: 500 }
+  );
+}
+
+return NextResponse.json({
+  success: true,
+  original: fixResult.original,
+  fixed: fixResult.fixed,
+  changes: fixResult.changes,
+  isSimpleFix: fixResult.isSimpleFix,
+  remainingRewrites: fixResult.isSimpleFix 
+    ? subscription.aiRewritesLimit 
+    : subscription.aiRewritesLimit - 1,
+});
   } catch (error) {
     console.error('Fix listing error:', error);
     return NextResponse.json(
