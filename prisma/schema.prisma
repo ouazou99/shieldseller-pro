@@ -1,0 +1,191 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User accounts
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  shops         Shop[]
+  alerts        Alert[]
+  subscription  Subscription?
+
+  @@map("users")
+}
+
+// Subscription/Billing
+model Subscription {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  stripePriceId        String?
+  stripeCurrentPeriodEnd DateTime?
+  
+  plan                 String   @default("free") // free, starter, pro, agency, enterprise
+  status               String   @default("active") // active, canceled, past_due
+  
+  shopsLimit           Int      @default(1)
+  scansPerDay          Int      @default(1)
+  aiRewritesLimit      Int      @default(0)
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+// TikTok Shop (or other platform shops)
+model Shop {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  platform     String   @default("tiktok") // tiktok, amazon, shopify, walmart
+  shopId       String   // Platform's shop ID
+  shopName     String
+  shopUrl      String?
+  
+  // Auth/API credentials (encrypted in production)
+  apiToken     String?
+  apiSecret    String?
+  
+  // Metrics
+  totalProducts Int     @default(0)
+  riskScore     Float   @default(0) // 0-100
+  status        String  @default("active") // active, suspended, warning
+  
+  lastScannedAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  listings     Listing[]
+  alerts       Alert[]
+
+  @@unique([userId, shopId, platform])
+  @@map("shops")
+}
+
+// Product listings
+model Listing {
+  id            String   @id @default(cuid())
+  shopId        String
+  shop          Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  // Product info
+  productId     String   // Platform's product ID
+  title         String
+  description   String   @db.Text
+  category      String?
+  price         Float?
+  imageUrl      String?
+  productUrl    String?
+  
+  // Risk assessment
+  riskScore     Float    @default(0) // 0-100
+  riskLevel     String   @default("safe") // safe, low, medium, high, critical
+  
+  // Metrics
+  views         Int      @default(0)
+  orders        Int      @default(0)
+  returnRate    Float    @default(0)
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  
+  // Status
+  status        String   @default("active") // active, flagged, suspended
+  lastScannedAt DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  violations    Violation[]
+
+  @@unique([shopId, productId])
+  @@map("listings")
+}
+
+// Detected violations
+model Violation {
+  id          String   @id @default(cuid())
+  listingId   String
+  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  
+  // Violation details
+  type        String   // keyword, category, ip, shipping, review, return_rate, etc.
+  severity    String   // info, warning, critical
+  title       String
+  description String   @db.Text
+  
+  // Resolution
+  status      String   @default("open") // open, fixed, dismissed, appealed
+  suggestion  String?  @db.Text // AI-generated fix suggestion
+  
+  detectedAt  DateTime @default(now())
+  resolvedAt  DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("violations")
+}
+
+// Alerts sent to users
+model Alert {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopId    String?
+  shop      Shop?    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  type      String   // risk_increase, new_violation, account_warning, daily_report
+  severity  String   // info, warning, critical
+  title     String
+  message   String   @db.Text
+  
+  // Notification channels
+  sentEmail Boolean  @default(false)
+  sentSms   Boolean  @default(false)
+  
+  read      Boolean  @default(false)
+  readAt    DateTime?
+  
+  createdAt DateTime @default(now())
+
+  @@map("alerts")
+}
+
+// Risk scan history (for tracking trends)
+model RiskScan {
+  id          String   @id @default(cuid())
+  shopId      String
+  
+  riskScore   Float
+  totalListings Int
+  violationCount Int
+  
+  scannedAt   DateTime @default(now())
+
+  @@index([shopId, scannedAt])
+  @@map("risk_scans")
+}
