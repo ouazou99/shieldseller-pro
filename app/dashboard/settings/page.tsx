@@ -1,40 +1,49 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { redirect } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
-import { User, CreditCard, Bell, Shield } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+// app/dashboard/settings/page.tsx
+
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { redirect } from 'next/navigation'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
+import { User, CreditCard, Bell, Shield } from 'lucide-react'
+import { formatDate } from '@/lib/utils'
 
 export default async function SettingsPage() {
-  const session = await getServerSession(authOptions);
-  
+  const session = await getServerSession(authOptions)
+
   if (!session?.user?.id) {
-    redirect('/login');
+    redirect('/login')
   }
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-  });
+  })
 
   const subscription = await prisma.subscription.findUnique({
     where: { userId: session.user.id },
-  });
+  })
 
   if (!user) {
-    redirect('/login');
+    redirect('/login')
   }
+
+  // your prisma Subscription type does NOT have currentPeriodEnd right now
+  // so we read it safely without breaking the build
+  const renewsAt = subscription
+    ? ((subscription as any).currentPeriodEnd as Date | null | undefined)
+    : null
+
+  const planLabel = subscription?.plan ? String(subscription.plan).toUpperCase() : 'FREE'
+  const isFreePlan = !subscription?.plan || subscription.plan === 'free'
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
-        <p className="text-gray-600 mt-1">
-          Manage your account and subscription
-        </p>
+        <p className="text-gray-600 mt-1">Manage your account and subscription</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -48,9 +57,7 @@ export default async function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
               <input
                 type="text"
                 defaultValue={user.name || ''}
@@ -58,14 +65,12 @@ export default async function SettingsPage() {
                 disabled
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input
                 type="email"
-                defaultValue={user.email}
+                defaultValue={user.email || ''}
                 className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
                 disabled
               />
@@ -91,25 +96,23 @@ export default async function SettingsPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">Current Plan</span>
-                <Badge variant={subscription?.plan === 'free' ? 'default' : 'success'}>
-                  {subscription?.plan.toUpperCase()}
-                </Badge>
+                <Badge variant={isFreePlan ? 'default' : 'success'}>{planLabel}</Badge>
               </div>
-              
-              {subscription && subscription.plan !== 'free' && (
+
+              {!isFreePlan && subscription && (
                 <>
                   <div className="text-sm text-gray-600 space-y-1">
-                    <p>Status: <span className="font-medium capitalize">{subscription.status}</span></p>
-                    {subscription.currentPeriodEnd && (
-                      <p>Renews: {formatDate(subscription.currentPeriodEnd, 'long')}</p>
-                    )}
+                    <p>
+                      Status:{' '}
+                      <span className="font-medium capitalize">{String(subscription.status || '')}</span>
+                    </p>
+
+                    {/* only show if your DB actually has it */}
+                    {renewsAt ? <p>Renews: {formatDate(renewsAt, 'long')}</p> : null}
                   </div>
-                  
+
                   <div className="pt-4 space-y-2">
-                    <a
-                      href={process.env.STRIPE_CUSTOMER_PORTAL_URL || '#'}
-                      className="block"
-                    >
+                    <a href={process.env.STRIPE_CUSTOMER_PORTAL_URL || '#'} className="block">
                       <Button variant="outline" size="sm" className="w-full">
                         Manage Subscription
                       </Button>
@@ -117,8 +120,8 @@ export default async function SettingsPage() {
                   </div>
                 </>
               )}
-              
-              {subscription?.plan === 'free' && (
+
+              {isFreePlan && (
                 <div className="pt-4">
                   <a href="/pricing">
                     <Button size="sm" className="w-full">
@@ -145,20 +148,16 @@ export default async function SettingsPage() {
               current={subscription?.shopsLimit || 1}
               limit={subscription?.shopsLimit || 1}
             />
-            
-            <UsageMeter
-              label="Daily Scans"
-              current={0}
-              limit={subscription?.scansPerDay || 1}
-            />
-            
+
+            <UsageMeter label="Daily Scans" current={0} limit={subscription?.scansPerDay || 1} />
+
             <UsageMeter
               label="AI Rewrites This Month"
               current={subscription?.aiRewritesLimit || 0}
               limit={subscription?.aiRewritesLimit || 0}
             />
 
-            {(subscription?.plan === 'free' || !subscription) && (
+            {(isFreePlan || !subscription) && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800">
                   💡 <strong>Upgrade to unlock:</strong> More shops, unlimited scans, and AI-powered fixes!
@@ -178,29 +177,17 @@ export default async function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                defaultChecked
-                className="rounded border-gray-300"
-              />
+              <input type="checkbox" defaultChecked className="rounded border-gray-300" />
               <span className="text-sm text-gray-700">Email alerts</span>
             </label>
-            
+
             <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                defaultChecked
-                className="rounded border-gray-300"
-              />
+              <input type="checkbox" defaultChecked className="rounded border-gray-300" />
               <span className="text-sm text-gray-700">Daily reports</span>
             </label>
-            
+
             <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                className="rounded border-gray-300"
-                disabled
-              />
+              <input type="checkbox" className="rounded border-gray-300" disabled />
               <span className="text-sm text-gray-500">SMS alerts (Pro+)</span>
             </label>
 
@@ -222,9 +209,7 @@ export default async function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-gray-900">Delete Account</p>
-              <p className="text-sm text-gray-600">
-                Permanently delete your account and all data
-              </p>
+              <p className="text-sm text-gray-600">Permanently delete your account and all data</p>
             </div>
             <Button variant="danger" size="sm" disabled>
               Delete Account
@@ -233,11 +218,19 @@ export default async function SettingsPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
 
-function UsageMeter({ label, current, limit }: { label: string; current: number; limit: number }) {
-  const percentage = limit > 0 ? (current / limit) * 100 : 0;
+function UsageMeter({
+  label,
+  current,
+  limit,
+}: {
+  label: string
+  current: number
+  limit: number
+}) {
+  const percentage = limit > 0 ? (current / limit) * 100 : 0
 
   return (
     <div>
@@ -254,5 +247,5 @@ function UsageMeter({ label, current, limit }: { label: string; current: number;
         />
       </div>
     </div>
-  );
+  )
 }

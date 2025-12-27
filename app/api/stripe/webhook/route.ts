@@ -140,8 +140,6 @@ async function handleSubscriptionCreated(subscription: any) {
       shopsLimit,
       scansPerDay,
       aiRewritesLimit,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
     },
     update: {
       plan,
@@ -150,8 +148,6 @@ async function handleSubscriptionCreated(subscription: any) {
       shopsLimit,
       scansPerDay,
       aiRewritesLimit,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
     },
   });
 }
@@ -161,8 +157,6 @@ async function handleSubscriptionUpdated(subscription: any) {
     where: { stripeSubscriptionId: subscription.id },
     data: {
       status: subscription.status,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
     },
   });
 }
@@ -187,7 +181,7 @@ async function handlePaymentSucceeded(invoice: any) {
 
 async function handlePaymentFailed(invoice: any) {
   console.log('Payment failed:', invoice.id);
-  
+
   // Update subscription status
   if (invoice.subscription) {
     await prisma.subscription.updateMany({
@@ -195,6 +189,6 @@ async function handlePaymentFailed(invoice: any) {
       data: { status: 'past_due' },
     });
   }
-  
+
   // Optional: Send payment failed email
 }
