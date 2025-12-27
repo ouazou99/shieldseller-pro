@@ -36,7 +36,11 @@ export async function GET(req: Request) {
             email: true,
           },
         },
-        listings: true,
+        listings: {
+     include: {
+       violations: true,
+     },
+   },
       },
     });
 
@@ -99,15 +103,16 @@ export async function GET(req: Request) {
           // Create alert for critical violations
           if (analysis.violations.some(v => v.severity === 'critical')) {
             await prisma.alert.create({
-              data: {
-                userId: shop.userId,
-                shopId: shop.id,
-                type: 'violation',
-                severity: 'critical',
-                message: `Critical violation detected in "${listing.title}"`,
-                sentEmail: false,
-              },
-            });
+  data: {
+    userId: shop.userId,
+    shopId: shop.id,
+    type: 'violation',
+    severity: 'critical',
+    title: 'Critical Violation Detected',
+    message: `Critical violation detected in "${listing.title}"`,
+    sentEmail: false,
+  },
+});;
           }
         }
 
