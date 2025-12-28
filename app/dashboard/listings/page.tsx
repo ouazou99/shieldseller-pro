@@ -1,4 +1,3 @@
-'use client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -6,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import { Package, AlertTriangle, Search, Filter } from 'lucide-react';
+import { Package, Filter } from 'lucide-react';
 import { getRiskBadgeColor, truncate } from '@/lib/utils';
 
 export default async function ListingsPage({
@@ -72,6 +71,8 @@ export default async function ListingsPage({
   const highCount = listings.filter(l => l.riskLevel === 'high').length;
   const safeCount = listings.filter(l => l.riskLevel === 'safe').length;
 
+  const hasFilters = Boolean(searchParams.shop || searchParams.risk);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -95,10 +96,10 @@ export default async function ListingsPage({
         <StatCard label="Critical" value={criticalCount} color="red" />
       </div>
 
-      {/* Filters */}
+      {/* Filters - using form like violations page */}
       <Card>
         <CardContent className="py-4">
-          <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
+          <form method="get" className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
             <div className="flex items-center space-x-2">
               <Filter className="h-5 w-5 text-gray-400" />
               <span className="text-sm font-medium text-gray-700">Filters:</span>
@@ -107,17 +108,9 @@ export default async function ListingsPage({
             {/* Shop Filter */}
             {shops.length > 1 && (
               <select
+                name="shop"
+                defaultValue={searchParams.shop || ''}
                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                value={searchParams.shop || ''}
-                onChange={(e) => {
-                  const params = new URLSearchParams(window.location.search);
-                  if (e.target.value) {
-                    params.set('shop', e.target.value);
-                  } else {
-                    params.delete('shop');
-                  }
-                  window.location.href = `/dashboard/listings?${params.toString()}`;
-                }}
               >
                 <option value="">All Shops</option>
                 {shops.map(shop => (
@@ -130,17 +123,9 @@ export default async function ListingsPage({
             
             {/* Risk Level Filter */}
             <select
+              name="risk"
+              defaultValue={searchParams.risk || ''}
               className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-              value={searchParams.risk || ''}
-              onChange={(e) => {
-                const params = new URLSearchParams(window.location.search);
-                if (e.target.value) {
-                  params.set('risk', e.target.value);
-                } else {
-                  params.delete('risk');
-                }
-                window.location.href = `/dashboard/listings?${params.toString()}`;
-              }}
             >
               <option value="">All Risk Levels</option>
               <option value="safe">Safe</option>
@@ -150,15 +135,19 @@ export default async function ListingsPage({
               <option value="critical">Critical</option>
             </select>
 
+            <Button type="submit" size="sm">
+              Apply
+            </Button>
+
             {/* Clear Filters */}
-            {(searchParams.shop || searchParams.risk) && (
+            {hasFilters && (
               <Link href="/dashboard/listings">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" type="button">
                   Clear Filters
                 </Button>
               </Link>
             )}
-          </div>
+          </form>
         </CardContent>
       </Card>
 
