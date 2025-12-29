@@ -3,7 +3,8 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
-import { CheckCircle, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
+import PricingCard from '@/components/PricingCard';
 
 export default async function PricingPage() {
   const session = await getServerSession(authOptions);
@@ -139,69 +140,6 @@ export default async function PricingPage() {
           />
         </div>
       </section>
-    </div>
-  );
-}
-
-function PricingCard({ plan, currentPlan, isLoggedIn }: any) {
-  const isCurrent = plan.name.toLowerCase() === currentPlan;
-
-  return (
-    <div
-      className={`bg-white rounded-2xl shadow-lg p-8 ${
-        plan.popular ? 'ring-2 ring-brand-600 relative' : ''
-      }`}
-    >
-      {plan.popular && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <span className="bg-brand-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-            Most Popular
-          </span>
-        </div>
-      )}
-
-      <div className="text-center mb-6">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-        <div className="flex items-baseline justify-center">
-          <span className="text-5xl font-bold text-gray-900">${plan.price}</span>
-          <span className="text-gray-600 ml-2">/month</span>
-        </div>
-      </div>
-
-      <ul className="space-y-3 mb-8">
-        {plan.features.map((feature: string, i: number) => (
-          <li key={i} className="flex items-start">
-            <CheckCircle className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-            <span className="text-gray-600">{feature}</span>
-          </li>
-        ))}
-      </ul>
-
-      {isCurrent ? (
-        <Button variant="outline" className="w-full" disabled>
-          Current Plan
-        </Button>
-      ) : isLoggedIn ? (
-        <form action="/api/stripe/checkout" method="POST">
-          <input type="hidden" name="priceId" value={plan.priceId} />
-          <Button
-            type="submit"
-            variant={plan.popular ? 'primary' : 'outline'}
-            className="w-full"
-          >
-            Upgrade to {plan.name}
-          </Button>
-        </form>
-      ) : (
-        <Link href="/register">
-          <Button
-            variant={plan.popular ? 'primary' : 'outline'}
-            className="w-full"
-          >
-            Start Free Trial
-          </Button>
-        </Link>
-      )}
     </div>
   );
 }
