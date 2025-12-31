@@ -2,7 +2,7 @@
 
 import Script from 'next/script';
 
-const TIKTOK_PIXEL_ID = '7589977269842493441';
+const TIKTOK_PIXEL_ID = 'D5AHFMJC77UEJJBEIKB0';
 
 export default function TikTokPixel() {
   return (
