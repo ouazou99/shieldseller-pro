@@ -50,6 +50,11 @@ export default function RegisterPage() {
         return;
       }
       
+      // 🎯 TIKTOK PIXEL: Track Sign Up Event
+      if (typeof window !== 'undefined' && window.ttq) {
+        window.ttq.track('Sign Up');
+      }
+      
       setSuccessMessage('Account created! Redirecting to login...');
       setTimeout(() => {
         router.push('/login');

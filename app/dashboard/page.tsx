@@ -6,6 +6,7 @@ import { Shield, Package, AlertTriangle, TrendingUp, Store } from 'lucide-react'
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import { getRiskBadgeColor } from '@/lib/utils';
+import DashboardClientWrapper from '@/components/DashboardClientWrapper';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -57,6 +58,7 @@ export default async function DashboardPage() {
     .slice(0, 5);
 
   return (
+    <DashboardClientWrapper>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -284,6 +286,7 @@ export default async function DashboardPage() {
         </div>
       )}
     </div>
+    </DashboardClientWrapper>
   );
 }
 
