@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /privacy
+Allow: /terms
+Allow: /refund-policy
+Allow: /cookie-policy
+Disallow: /admin
+Disallow: /api
+Disallow: /dashboard
