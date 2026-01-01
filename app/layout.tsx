@@ -4,6 +4,7 @@ import './globals.css';
 import Providers from '@/components/Providers';
 import Footer from '@/components/Footer';
 import TikTokPixel from '@/components/TikTokPixel';
+import MetaPixel from '@/components/MetaPixel';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <TikTokPixel />
+        <MetaPixel />
       </head>
       <body className={inter.className}>
         <Providers>
